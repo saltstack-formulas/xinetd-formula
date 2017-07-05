@@ -1,0 +1,74 @@
+<%
+require 'socket'
+
+# @return [String] public IP address of workstation used for egress traffic
+def local_ip
+  @local_ip ||= begin
+    # turn off reverse DNS resolution temporarily
+    orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true
+
+    UDPSocket.open do |s|
+      s.connect '64.233.187.99', 1 # a google IP, does not hit network
+      s.addr.last
+    end
+  ensure
+    Socket.do_not_reverse_lookup = orig
+  end
+end
+
+# @return [Integer] default polipo listening port
+def local_port ; 8123 ; end
+
+# @return [String] the polipo proxy URL
+def http_proxy_url ; "http://#{local_ip}:#{local_port}" ; end
+
+# @return [TrueClass,FalseClass] whether or not the polipo port is listening
+def proxy_running?
+  socket = TCPSocket.new(local_ip, local_port)
+  true
+rescue SocketError, Errno::ECONNREFUSED,
+  Errno::EHOSTUNREACH, Errno::ENETUNREACH, IOError
+  false
+rescue Errno::EPERM, Errno::ETIMEDOUT
+  false
+ensure
+  socket && socket.close
+end
+%>
+---
+driver:
+  name: docker
+  use_sudo: true
+  require_chef_omnibus: false
+  <% if proxy_running? %>
+  http_proxy: <%= http_proxy_url %>
+  https_proxy: <%= http_proxy_url %>
+  <% end %>
+
+driver_config:
+  provision_command:
+    - sed -i 's/http\:\/\/archive/http\:\/\/us.archive/g' /etc/apt/sources.list
+    - apt-get clean && rm -rf /var/lib/apt/lists/* && apt-get update
+    <% if proxy_running? %>
+    - echo 'Acquire::http::Proxy "<%= http_proxy_url %>";' > /etc/apt/apt.conf.d/proxy
+    - "env http_proxy=<%= http_proxy_url %> bash -c 'curl -sL http://www.chef.io/chef/install.sh | bash'"
+    - curl -o bootstrap-salt.sh -sL https://bootstrap.saltstack.com
+    - env http_proxy=<%= http_proxy_url %> bash bootstrap-salt.sh -X -d -H <%= http_proxy_url %>
+    <% else %>
+    - "curl -sL http://www.chef.io/chef/install.sh | bash"
+    - curl -o bootstrap-salt.sh -sL https://bootstrap.saltstack.com
+    - bash bootstrap-salt.sh -X -d
+    <% end %>
+
+provisioner:
+  # installs from an http:// source to enable better caching through
+  # http_proxy, and yes, this is a bit evil
+<% if proxy_running? %>
+  http_proxy: <%= http_proxy_url %>
+  https_proxy: <%= http_proxy_url %>
+  chef_omnibus_url: http://www.chef.io/chef/install.sh
+  chef_bootstrap_url: http://www.chef.io/chef/install.sh
+  additional_minion_config:
+    proxy_host: <%= (http_proxy_url.split(":")[1]).split("/")[2] %>
+    proxy_port: <%= http_proxy_url.split(":")[2] %>
+<% end %>

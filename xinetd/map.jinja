@@ -1,4 +1,13 @@
-{% set xinetd = { 
-        'pkg': 'xinetd',
-        'service': 'xinetd',
-    } %}
+{% set default_settings = salt['grains.filter_by']({
+  'default': {
+    'pkg': 'xinetd',
+    'service': 'xinetd',
+  },
+}, merge=salt['pillar.get']('xinetd:lookup')) %}
+
+{% set xinetd = salt['pillar.get'](
+    'xinetd',
+    default=default_settings,
+    merge=True
+  )
+%}
