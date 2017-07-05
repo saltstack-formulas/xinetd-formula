@@ -1,0 +1,14 @@
+xinetd:
+  services:
+    # Configure custom xinetd services (Options are not checked)
+    echo:
+      description: An xinetd internal service which echo's characters back to
+      # yes or no values needs to be escaped otherwise are treated as booleans
+      disable: 'yes'
+      type: INTERNAL
+      id: echo-stream
+      socket_type: stream
+      protocol: tcp
+      user: root
+      # yes or no values needs to be escaped otherwise are treated as booleans
+      wait: 'no'

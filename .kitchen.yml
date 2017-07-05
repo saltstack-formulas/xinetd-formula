@@ -1,0 +1,31 @@
+<%
+require 'yaml'
+formula = YAML.load_file('FORMULA')
+formula_name = formula['name']
+%>
+---
+platforms:
+  - name: ubuntu-14.04
+  - name: ubuntu-16.04
+
+provisioner:
+  name: salt_solo
+  salt_install: bootstrap
+  salt_bootstrap_url: https://bootstrap.saltstack.com
+  salt_version: latest
+  pillars-from-files:
+    <%= formula_name %>.sls: pillar.example
+  pillars:
+    top.sls:
+      base:
+        '*':
+          - <%= formula_name %>
+  log_level: <%= ENV['SALT_DEBUG_LEVEL'] || 'debug' %>
+  formula: <%= formula_name %>
+  state_top:
+    base:
+      '*':
+        - <%= formula_name %>
+
+suites:
+  - name: default
