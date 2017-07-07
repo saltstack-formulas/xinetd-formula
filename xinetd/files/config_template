@@ -5,7 +5,8 @@
 {% if config.description is defined %}
 # description: {{ config.description }}
 {% endif -%}
-service {{ service }} {
+service {{ service }}
+{
 {% for k, v in config.iteritems() -%}
 {%- if k != 'description' -%}
 {{ '%-15s' | format(k) | indent(2, true) ~ ' = ' ~ v }}
