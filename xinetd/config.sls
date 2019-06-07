@@ -9,7 +9,7 @@ xinetd_{{ service }}_config:
     - template: jinja
     - context:
         service: {{ service }}
-        config: {{ config }}
+        config: {{ config|tojson }}
     - watch_in:
         service: xinetd
 {% endfor %}
