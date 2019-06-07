@@ -5,8 +5,8 @@ formula_name = formula['name']
 %>
 ---
 platforms:
-  - name: ubuntu-14.04
   - name: ubuntu-16.04
+  - name: ubuntu-18.04
 
 provisioner:
   name: salt_solo
