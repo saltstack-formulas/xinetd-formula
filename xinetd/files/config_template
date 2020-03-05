@@ -1,0 +1,15 @@
+# -----------------------------------
+# THIS FILE IS MANAGED BY SALTSTACK
+# MANUAL CHANGES WILL BE OVERRIDEN
+# -----------------------------------
+{% if config.description is defined %}
+# description: {{ config.description }}
+{% endif -%}
+service {{ service }}
+{
+{% for k, v in config.items() -%}
+{%- if k != 'description' -%}
+{{ '%-15s' | format(k) | indent(2, true) ~ ' = ' ~ v }}
+{% endif -%}
+{% endfor -%}
+}

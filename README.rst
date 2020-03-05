@@ -15,9 +15,13 @@ Available states
 .. contents::
     :local:
 
-``xinetd``
+``xinetd.install``
 ----------
 
 Installs the xinetd package and starts the daemon.
 
 
+``xinetd.config``
+----------
+
+Configure xinetd services based on pillar data.
