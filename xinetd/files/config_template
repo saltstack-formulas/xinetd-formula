@@ -7,7 +7,7 @@
 {% endif -%}
 service {{ service }}
 {
-{% for k, v in config.iteritems() -%}
+{% for k, v in config.items() -%}
 {%- if k != 'description' -%}
 {{ '%-15s' | format(k) | indent(2, true) ~ ' = ' ~ v }}
 {% endif -%}

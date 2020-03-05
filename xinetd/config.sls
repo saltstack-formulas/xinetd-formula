@@ -1,7 +1,7 @@
 {%- from "xinetd/map.jinja" import xinetd with context -%}
 
 {%- if xinetd.services is iterable %}
-{%- for service, config in xinetd.services.iteritems() %}
+{%- for service, config in xinetd.services.items() %}
 xinetd_{{ service }}_config:
   file.managed:
     - name: /etc/xinetd.d/{{ service }}
